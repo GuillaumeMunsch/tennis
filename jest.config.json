@@ -1,5 +1,5 @@
 {
-  "preset": "ts-jest",
+  "setupFilesAfterEnv": ["jest-extended/all"],
   "testEnvironment": "node",
   "testMatch": ["**/?(*.)spec.ts?(x)"]
 }

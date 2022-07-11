@@ -1,94 +1,176 @@
-import Game, { Player } from ".";
+import addTennisPoint, { GameState, Player } from ".";
 
-function toDeuceGame() {
-  return new Game()
-    .player1Scores()
-    .player2Scores()
-    .player1Scores()
-    .player2Scores()
-    .player1Scores()
-    .player2Scores();
-}
+describe("Classical points scoring", () => {
+  it("Score should be 15-0", () => {
+    // Given
+    const initialScore: GameState = { status: "ongoing", game: { playerA: "0", playerB: "0" } };
+    const scoringPlayer: Player = "playerA";
 
-function toAdvantageGame(player: Player) {
-  const deuceGame = toDeuceGame();
-  switch (player) {
-    case "PLAYER1":
-      return deuceGame.player1Scores();
-    case "PLAYER2":
-      return deuceGame.player2Scores();
-  }
-}
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
 
-it("Score should be blank on game initialisation", function() {
-  const game = new Game();
-  expect(game.displayScore()).toEqual("Love-Love");
+    // Then
+    const expectedResultScore: GameState = { status: "ongoing", game: { playerA: "15", playerB: "0" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
+
+  it("Score should be 0-15", () => {
+    // Given
+    const initialScore: GameState = { status: "ongoing", game: { playerA: "0", playerB: "0" } };
+    const scoringPlayer: Player = "playerB";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "ongoing", game: { playerA: "0", playerB: "15" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
+
+  it("Score should be 30-0", () => {
+    // Given
+    const initialScore: GameState = { status: "ongoing", game: { playerA: "15", playerB: "0" } };
+    const scoringPlayer: Player = "playerA";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "ongoing", game: { playerA: "30", playerB: "0" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
+
+  it("Score should be 40-0", () => {
+    // Given
+    const initialScore: GameState = { status: "ongoing", game: { playerA: "30", playerB: "0" } };
+    const scoringPlayer: Player = "playerA";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "ongoing", game: { playerA: "40", playerB: "0" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
+
+  it("Score should be 40-15", () => {
+    // Given
+    const initialScore: GameState = { status: "ongoing", game: { playerA: "40", playerB: "0" } };
+    const scoringPlayer: Player = "playerB";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "ongoing", game: { playerA: "40", playerB: "15" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
+
+  it("Game should be won by player A", () => {
+    // Given
+    const initialScore: GameState = { status: "ongoing", game: { playerA: "40", playerB: "0" } };
+    const scoringPlayer: Player = "playerA";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "win", player: "playerA" };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
+
+  it("Game should be won by player B", () => {
+    // Given
+    const initialScore: GameState = { status: "ongoing", game: { playerA: "30", playerB: "40" } };
+    const scoringPlayer: Player = "playerB";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "win", player: "playerB" };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
 });
 
-it("1 point should be displayed as '15'", function() {
-  const game = new Game() //
-    .player1Scores();
-  expect(game.displayScore()).toEqual("15-Love");
+describe("Points scored when Deuce", () => {
+  it("Game should be Adv-40", () => {
+    // Given
+    const initialScore: GameState = { status: "deuce", game: { playerA: "40", playerB: "40" } };
+    const scoringPlayer: Player = "playerA";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "advantage", game: { playerA: "Adv", playerB: "40" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
+
+  it("Game should be 40-Adv", () => {
+    // Given
+    const initialScore: GameState = { status: "deuce", game: { playerA: "40", playerB: "40" } };
+    const scoringPlayer: Player = "playerB";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "advantage", game: { playerA: "40", playerB: "Adv" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
 });
 
-it("2 points should be displayed as '30'", function() {
-  const game = new Game() //
-    .player1Scores()
-    .player1Scores();
-  expect(game.displayScore()).toEqual("30-Love");
-});
+describe("Points scored when Advantage", () => {
+  it("Game should be 40-40", () => {
+    // Given
+    const initialScore: GameState = { status: "advantage", game: { playerA: "Adv", playerB: "40" } };
+    const scoringPlayer: Player = "playerB";
 
-it("3 points should be displayed as '40'", function() {
-  const game = new Game() //
-    .player1Scores()
-    .player1Scores()
-    .player1Scores();
-  expect(game.displayScore()).toEqual("40-Love");
-});
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
 
-it("If a player has scored 40 and they score next, they win the game", function() {
-  const game = new Game() //
-    .player1Scores()
-    .player1Scores()
-    .player1Scores()
-    .player1Scores();
-  expect(game.displayScore()).toEqual("Player 1 wins");
-});
+    // Then
+    const expectedResultScore: GameState = { status: "deuce", game: { playerA: "40", playerB: "40" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
 
-it("If a player has scored 40 and they score next, they win the game", function() {
-  const game = new Game() //
-    .player2Scores()
-    .player2Scores()
-    .player2Scores()
-    .player2Scores();
-  expect(game.displayScore()).toEqual("Player 2 wins");
-});
+  it("Game should be 40-40", () => {
+    // Given
+    const initialScore: GameState = { status: "advantage", game: { playerA: "40", playerB: "Adv" } };
+    const scoringPlayer: Player = "playerA";
 
-it("If both players have scored 40, the game is said to be 'deuce'", function() {
-  const game = toDeuceGame();
-  expect(game.displayScore()).toEqual("Deuce");
-});
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
 
-it("If the game is deuce, the next scoring player has 'advantage'", function() {
-  const game = toDeuceGame() //
-    .player1Scores();
-  expect(game.displayScore()).toEqual("Advantage Player 1");
-});
+    // Then
+    const expectedResultScore: GameState = { status: "deuce", game: { playerA: "40", playerB: "40" } };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
 
-it("If the game is deuce, the next scoring player has 'advantage'", function() {
-  const game = toDeuceGame() //
-    .player2Scores();
-  expect(game.displayScore()).toEqual("Advantage Player 2");
-});
+  it("Game should be won by player A", () => {
+    // Given
+    const initialScore: GameState = { status: "advantage", game: { playerA: "Adv", playerB: "40" } };
+    const scoringPlayer: Player = "playerA";
 
-it("If the player with advantage scores next, they win the game", function() {
-  const game = toAdvantageGame("PLAYER1") //
-    .player1Scores();
-  expect(game.displayScore()).toEqual("Player 1 wins");
-});
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
 
-it("If the player without advantage scores next, the game is back to deuce", function() {
-  const game = toAdvantageGame("PLAYER1") //
-    .player2Scores();
-  expect(game.displayScore()).toEqual("Deuce");
+    // Then
+    const expectedResultScore: GameState = { status: "win", player: "playerA" };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
+
+  it("Game should be won by player B", () => {
+    // Given
+    const initialScore: GameState = { status: "advantage", game: { playerA: "40", playerB: "Adv" } };
+    const scoringPlayer: Player = "playerB";
+
+    // When
+    const resultScore: GameState = addTennisPoint(scoringPlayer)(initialScore);
+
+    // Then
+    const expectedResultScore: GameState = { status: "win", player: "playerB" };
+    expect(resultScore).toEqual(expectedResultScore);
+  });
 });
