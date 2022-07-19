@@ -2,42 +2,64 @@ import { computePointScored, computePointScoredOnAdvantage, computePointScoredOn
 
 export const SCORES = ["0", "15", "30", "40", "Adv"] as const;
 
-type Score = typeof SCORES[number];
+export type Score = typeof SCORES[number];
 
 export type Player = "playerA" | "playerB";
 
-type GameResult = {
+interface GameStateInterface {
+  scorePoint: (player: Player) => GameState;
+}
+
+export type GameResult = GameStateInterface & {
   status: "win";
   player: Player;
 };
 
-export type OngoingGame = {
-  status: "ongoing" | "deuce" | "advantage";
-  game: Record<Player, Score>;
+export type GameOngoing = GameStateInterface & {
+  status: "ongoing";
+  score: Record<Player, Score>;
 };
 
-export type GameState = OngoingGame | GameResult;
+export type GameDeuce = GameStateInterface & {
+  status: "deuce";
+};
+
+export type GameAdvantage = GameStateInterface & {
+  status: "advantage";
+  player: Player;
+};
+
+export type GameState = GameOngoing | GameDeuce | GameAdvantage | GameResult;
 
 const computeGameResult = (player: Player): GameResult => ({ player, status: "win" });
 
-const addTennisPoint = (player: Player) => (gameState: GameState): GameState => {
-  if (gameState.status === "win") {
-    return gameState;
-  }
-  const { game } = gameState;
-
-  if (gameState.status === "deuce") {
-    return computePointScoredOnDeuce(gameState, player);
-  } else if (gameState.status === "advantage") {
-    return computePointScoredOnAdvantage(gameState, player);
-  }
-
-  const currentPlayerScoreIndex = SCORES.findIndex(score => score === game[player]);
-  if (game[player] === "40") {
-    return computeGameResult(player);
-  }
-
-  return computePointScored(player, currentPlayerScoreIndex)(gameState);
+const addPointByStatusMethod = {
+  deuce: computePointScoredOnDeuce,
+  advantage: computePointScoredOnAdvantage,
 };
+
+const addTennisPoint =
+  (player: Player) =>
+  (gameState: GameState): GameState => {
+    addPointByStatusMethod(gameState.status)(gameState, player);
+
+    if (gameState.status === "win") {
+      return gameState;
+    }
+
+    if (gameState.status === "deuce") {
+      return computePointScoredOnDeuce(gameState, player);
+    } else if (gameState.status === "advantage") {
+      return computePointScoredOnAdvantage(gameState, player);
+    }
+
+    const { score } = gameState;
+    const currentPlayerScoreIndex = SCORES.findIndex((score) => score === score[player]);
+    if (score[player] === "40") {
+      return computeGameResult(player);
+    }
+
+    return computePointScored(player, currentPlayerScoreIndex)(gameState);
+  };
 
 export default addTennisPoint;

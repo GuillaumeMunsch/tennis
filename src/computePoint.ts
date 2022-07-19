@@ -1,44 +1,36 @@
-import { GameState, OngoingGame, Player, SCORES } from ".";
+import { GameState, GameOngoing, Player, SCORES, GameDeuce, GameAdvantage, GameResult } from ".";
 
-export const computePointScoredOnDeuce = (gameState: OngoingGame, player: Player): OngoingGame => ({
+export const computePointScoredOnDeuce = (gameState: GameDeuce, player: Player): GameAdvantage => ({
   status: "advantage",
-  game: {
-    ...gameState.game,
-    [player]: "Adv"
-  }
+  player,
 });
 
-export const computePointScored = (player: Player, currentPlayerScoreIndex: number) => (
-  ongoingGameState: OngoingGame
-): GameState => {
-  const playerNextScore = SCORES[currentPlayerScoreIndex + 1];
+export const computePointScored =
+  (player: Player, currentPlayerScoreIndex: number) =>
+  (ongoingGameState: GameOngoing): GameState => {
+    const playerNextScore = SCORES[currentPlayerScoreIndex + 1];
 
-  const isNextScoreDeuce =
-    playerNextScore == "40" &&
-    ((player === "playerA" && ongoingGameState.game.playerB === "40") ||
-      (player === "playerB" && ongoingGameState.game.playerA === "40"));
-  return {
-    status: isNextScoreDeuce ? "deuce" : "ongoing",
-    game: {
-      ...ongoingGameState.game,
-      [player]: SCORES[currentPlayerScoreIndex + 1]
-    }
+    const isNextScoreDeuce =
+      playerNextScore == "40" &&
+      ((player === "playerA" && ongoingGameState.score.playerB === "40") ||
+        (player === "playerB" && ongoingGameState.score.playerA === "40"));
+    return {
+      status: isNextScoreDeuce ? "deuce" : "ongoing",
+      score: {
+        ...ongoingGameState.score,
+        [player]: SCORES[currentPlayerScoreIndex + 1],
+      },
+    };
   };
-};
 
-export const computePointScoredOnAdvantage = (gameState: OngoingGame, player: Player): GameState => {
-  const { game } = gameState;
-  if (game[player] === "Adv") {
+export const computePointScoredOnAdvantage = (gameState: GameAdvantage, player: Player): GameDeuce | GameResult => {
+  if (player === gameState.player) {
     return {
       status: "win",
-      player
+      player,
     };
   }
   return {
     status: "deuce",
-    game: {
-      playerA: "40",
-      playerB: "40"
-    }
   };
 };
